@@ -1,4 +1,10 @@
 const paths = {
+  home: (
+    <>
+      <path d="M4 11l8-7 8 7" />
+      <path d="M6 10v10h12V10" />
+    </>
+  ),
   send: <path d="M4 12h14M13 6l6 6-6 6" />,
   qr: (
     <>

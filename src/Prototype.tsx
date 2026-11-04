@@ -11,6 +11,7 @@ import { History } from './screens/History'
 import { Receipt } from './screens/Receipt'
 import { Confirm } from './screens/Confirm'
 import { Success } from './screens/Success'
+import { Sidebar, type Section } from './components/Sidebar'
 
 const HOME: Route = { name: 'home' }
 
@@ -38,6 +39,23 @@ export function Prototype() {
     reset({ name: 'success', draft, receiptNo: receiptNumber() })
   }
 
+  const section: Section = (() => {
+    const root = stack[1]?.name
+    return root === 'transfer' || root === 'qr' || root === 'topup' || root === 'history' ? root : 'home'
+  })()
+
+  const navigate = (s: Section) => (s === 'home' ? reset() : reset({ name: s }))
+
+  return (
+    <div className="shell">
+      <Sidebar active={section} onNavigate={navigate} />
+      <main className="main" key={stack.length + route.name}>
+        {renderScreen()}
+      </main>
+    </div>
+  )
+
+  function renderScreen() {
   switch (route.name) {
     case 'home':
       return (
@@ -67,5 +85,6 @@ export function Prototype() {
       return <Confirm draft={route.draft} onBack={back} onPay={() => pay(route.draft)} />
     case 'success':
       return <Success draft={route.draft} receiptNo={route.receiptNo} onHome={() => reset()} />
+  }
   }
 }

@@ -21,7 +21,7 @@ const actions: Array<{ id: 'transfer' | 'qr' | 'topup' | 'history'; icon: IconNa
 
 export function Home({ history, onAction, onPick, onOpen }: Props) {
   return (
-    <div className="screen">
+    <div className="screen screen--home">
       <div className="scroll">
         <div className="hello">
           <div className="brand">
@@ -29,28 +29,40 @@ export function Home({ history, onAction, onPick, onOpen }: Props) {
           </div>
           <div className="me">ДА</div>
         </div>
-        <div className="balance">
-          <small>Доступно</small>
-          <div className="balance__sum num">{tenge(BALANCE)}</div>
-          <div className="balance__card">{CARD}</div>
-        </div>
-        <div className="actions">
-          {actions.map((a) => (
-            <button key={a.id} className="act" onClick={() => onAction(a.id)}>
-              <i>
-                <Icon name={a.icon} />
-              </i>
-              {a.label}
-            </button>
-          ))}
-        </div>
-        <div className="sec">Недавние</div>
-        <PeopleStrip people={recent} onPick={onPick} />
-        <div className="sec">Последние операции</div>
-        <div className="list">
-          {history.slice(0, 3).map((h) => (
-            <HistoryRow key={h.id} item={h} onOpen={onOpen} />
-          ))}
+        <h1 className="page-title">Главная</h1>
+        <div className="home-grid">
+          <section className="home-main">
+            <div className="balance">
+              <small>Доступно</small>
+              <div className="balance__sum num">{tenge(BALANCE)}</div>
+              <div className="balance__card">{CARD}</div>
+            </div>
+            <div className="actions">
+              {actions.map((a) => (
+                <button key={a.id} className="act" onClick={() => onAction(a.id)}>
+                  <i>
+                    <Icon name={a.icon} />
+                  </i>
+                  {a.label}
+                </button>
+              ))}
+            </div>
+            <div className="sec">Недавние</div>
+            <PeopleStrip people={recent} onPick={onPick} />
+          </section>
+          <section className="home-side">
+            <div className="sec">Последние операции</div>
+            <div className="list">
+              {history.slice(0, 3).map((h) => (
+                <HistoryRow key={h.id} item={h} onOpen={onOpen} />
+              ))}
+              {history.slice(3, 6).map((h) => (
+                <div key={h.id} className="desktop-only">
+                  <HistoryRow item={h} onOpen={onOpen} />
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
       </div>
     </div>

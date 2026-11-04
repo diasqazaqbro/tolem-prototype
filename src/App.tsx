@@ -19,14 +19,5 @@ export function App() {
 
   if (recorder) return <Recorder />
 
-  return (
-    <>
-      <div id="app">
-        <Prototype />
-      </div>
-      <div className="aside">
-        Секундомер для замеров: <a href="#recorder">открыть регистратор →</a>
-      </div>
-    </>
-  )
+  return <Prototype />
 }
