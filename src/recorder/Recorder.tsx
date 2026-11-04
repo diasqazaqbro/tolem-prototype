@@ -4,10 +4,17 @@ import { conditionName, plannedOrder, scenarios, type Condition } from './scenar
 type Trial = { scenario: string; condition: Condition; time: number | null; screens: string; failed: boolean; note: string }
 type State = { trials: Trial[]; current: number }
 
-const KEY = 'tolem-pilot-v1'
+const KEY = 'tolem-pilot-v2'
 
 const fresh = (): State => ({
-  trials: plannedOrder.map(([scenario, condition]) => ({ scenario, condition, time: null, screens: '', failed: false, note: '' })),
+  trials: plannedOrder.map(([scenario, condition]) => ({
+    scenario,
+    condition,
+    time: null,
+    screens: condition === 'B' ? String(scenarios[scenario].tolemScreens) : '',
+    failed: false,
+    note: '',
+  })),
   current: 0,
 })
 
@@ -108,24 +115,46 @@ export function Recorder() {
   return (
     <div className="rec">
       <h1>Регистратор пилотного замера</h1>
-      <p>
-        Открой на ноутбуке. Телефон в руке, приложение открыто на главном экране. <b>Space</b> = старт на первом тапе, <b>Space</b> = стоп,
-        когда открылся финальный экран (подтверждение или квитанция). Деньги не отправлять.
-      </p>
       <p className="small">A = Kaspi.kz (текущее приложение), B = прототип Tölem. Порядок A/B чередуется, чтобы сгладить эффект обучения.</p>
+
+      <details className="setup">
+        <summary>Подготовка и правила (прочитать один раз)</summary>
+        <ol>
+          <li>На маке запущен <code>pnpm dev --host</code>. На телефоне в Safari открыт адрес из строки «Network», телефон в той же Wi-Fi сети.</li>
+          <li>На телефоне включён «Не беспокоить».</li>
+          <li>Пройди все 5 сценариев в Tölem 1–2 раза без замера. На «Подтвердить Face ID» не жми. После пробы обнови страницу.</li>
+          <li>Перед каждым замером: Kaspi на главном экране; Tölem обнови страницу (история вернётся к исходной).</li>
+          <li>Space = старт, сразу начинаешь тапать. Space = стоп, как только открылся финальный экран. Регистратор сам перейдёт к следующей строке.</li>
+          <li>Финальный экран: следующий тап отправил бы деньги. Эту кнопку не нажимать.</li>
+          <li>Экраны: главный не считается, финальный считается, шторка снизу считается, клавиатура нет. Для Tölem уже вписано.</li>
+          <li>Ошибся: исправь, дойди до конца, напиши в заметке. Перемеривать только при технической проблеме (случайный Space, зависание). Плохое время не повод перемеривать.</li>
+        </ol>
+      </details>
 
       <div className={`clock num${startedAt !== null ? ' clock--run' : ''}`}>{shown.toFixed(1)} с</div>
       <div className="now">
         {trial ? (
           <>
-            Сейчас: <b>{trial.scenario}</b> · <span className={`tag tag--${trial.condition}`}>{conditionName[trial.condition]}</span> —{' '}
-            {scenarios[trial.scenario]}
+            <div>
+              Замер {state.current + 1} из {state.trials.length}: <b>{trial.scenario}</b> ·{' '}
+              <span className={`tag tag--${trial.condition}`}>{conditionName[trial.condition]}</span> — {scenarios[trial.scenario].title}
+            </div>
+            <ol className="steps">
+              <li>{trial.condition === 'A' ? 'Kaspi на главном экране' : 'Tölem: обнови страницу, ты на главной'}</li>
+              <li>Space и сразу первый тап</li>
+              {(trial.condition === 'A' ? scenarios[trial.scenario].kaspi : scenarios[trial.scenario].tolem).map((st, i) => (
+                <li key={i}>{st}</li>
+              ))}
+              <li>
+                <b>Space, когда {scenarios[trial.scenario].stop[trial.condition]}</b>
+              </li>
+              {trial.condition === 'A' && <li>Впиши число экранов в таблицу</li>}
+            </ol>
           </>
         ) : (
-          'Все замеры сделаны'
+          'Все замеры сделаны. Скопируй результаты ниже и отправь в чат.'
         )}
       </div>
-
       <div className="rbtns">
         <button className="main" onClick={toggle}>
           {startedAt !== null ? 'Стоп (Space)' : 'Старт (Space)'}
@@ -187,7 +216,6 @@ export function Recorder() {
         </button>
       </div>
       <textarea ref={outRef} readOnly value={tsv} aria-label="Результаты" />
-      <p className="small">Экранов = сколько экранов прошёл от главного до финального: финальный считается, главный нет.</p>
     </div>
   )
 }
